@@ -137,9 +137,9 @@ public class Main extends ApplicationAdapter {
             }*/
             contador++; //Actualizamos el número de frames que llevamos
             //Toca moverse, quizás, o crecer
-            if (contador % 30 == 0) {
+            if (contador % 20 == 0) {
                 //Si hemos pasado 4 veces (240 frames) entonces crecemos y reseteamos
-                if (contador == 240) {
+                if (contador == 200) {
                     contador = 0;
                     snaky.crecer();
                 } else
