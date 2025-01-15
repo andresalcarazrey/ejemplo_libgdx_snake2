@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.politecnicomalaga.libgdxe1.model.Cuadrado;
+import com.politecnicomalaga.libgdxe1.model.Serpiente;
 
 import java.util.Random;
 
@@ -17,7 +19,7 @@ import java.util.Random;
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
     private SpriteBatch batch; //Es la clase que representa una pantalla donde se pueden pintar imágenes
-    private Texture image;  //Esta es una instancia/objeto imagen
+    //private Texture image;  //Esta es una instancia/objeto imagen
     private Texture player;
     private Texture endImage;
     //Aquí ponemos todas las Texture que necesitemos ahora mismo en el videojuego
@@ -25,15 +27,22 @@ public class Main extends ApplicationAdapter {
     private int iPosXClicked;
     private int iPosYClicked;
 
-    private float iPosXImagen;
-    private float iPosYImagen;
+    //private float iPosXImagen;
+    //private float iPosYImagen;
 
-    private float fPosXPlayer;
-    private float fPosYPlayer;
-    private float fVelPlayer;
+    //private float fPosXPlayer;
+    //private float fPosYPlayer;
+    //private float fVelPlayer;
 
-    private int iDireccion;  //0 para arriba, 1 para abajo, 2 para izquierda, 3 para derecha
+    //private int iDireccion;  //0 para arriba, 1 para abajo, 2 para izquierda, 3 para derecha
     private boolean bGanamos;
+
+    //Empezamos la "mutación" hacia la serpiente
+    private Serpiente snaky;
+
+    //Primera aproximación al control del tiempo. Contador entero básico
+    private int contador;
+
 
     @Override
     public void create() {
@@ -42,17 +51,20 @@ public class Main extends ApplicationAdapter {
             ApplicationAdapter es el encargado de llamar a este método. Lo veremos en profundidad cuando estudiemos herencia
          */
         batch = new SpriteBatch();
-        image = new Texture("mouse.png");
-        player = new Texture("player.png");
+        //image = new Texture("mouse.png");
+        player = new Texture("snake_body.png");
         endImage = new Texture("end.png");
-        iDireccion =0;
-        iPosXImagen=200;
-        iPosYImagen=200;
+        //iDireccion =0;
+        //iPosXImagen=200;
+        //iPosYImagen=200;
 
-        fPosXPlayer=300;
-        fPosYPlayer=300;
-        fVelPlayer=0.5f;
+        //fPosXPlayer=300;
+        //fPosYPlayer=300;
+        //fVelPlayer=0.5f;
         bGanamos = false;
+        snaky = new Serpiente(player,Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),20);
+        contador = 0;
+
     }
 
     @Override
@@ -78,22 +90,29 @@ public class Main extends ApplicationAdapter {
             iPosXClicked = Gdx.input.getX();
             iPosYClicked = Gdx.input.getY();
 
-            if (iDireccion==0 || iDireccion ==1) {
-                if (iPosXClicked<fPosXPlayer) iDireccion=2; //Ibamos arriba o abajo, ahora a la izquierda
-                else iDireccion=3; //Han tocado por la derecha...
+            if (snaky.getDireccion()== Cuadrado.Direccion.ABAJO || snaky.getDireccion() == Cuadrado.Direccion.ARRIBA) {
+                if (iPosXClicked< snaky.getPosXCabeza()) {
+                    snaky.setDireccion(Cuadrado.Direccion.IZQ);
+                    //Ibamos arriba o abajo, ahora a la izquierda
+                }
+                else {
+                    snaky.setDireccion(Cuadrado.Direccion.DER);; //Han tocado por la derecha...
+                }
             } else {
-                if (iPosYClicked<fPosYPlayer) iDireccion=0; //Ibamos izq o derecha, ahora abajo
-                else iDireccion=1;  //vamos para arriba
+                if (Gdx.graphics.getHeight()-iPosYClicked< snaky.getPosYCabeza()) {
+                    snaky.setDireccion(Cuadrado.Direccion.ABAJO);
+                    //Ibamos izq o der ahora abajo
+                }
+                else {
+                    snaky.setDireccion(Cuadrado.Direccion.ARRIBA);
+                }
             }
+            //Desactivamos por ahora la "muerte" de nuestro player
             if (bGanamos) {
-                iDireccion =0;
-                iPosXImagen=200;
-                iPosYImagen=200;
-
-                fPosXPlayer=300;
-                fPosYPlayer=300;
-                fVelPlayer=0.5f;
                 bGanamos = false;
+                //La antigua serpiente, al quedarse sin referencia, desaparece y se recicla
+                snaky = new Serpiente(player,Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),20);
+                contador = 0;
             }
         }
 
@@ -102,7 +121,7 @@ public class Main extends ApplicationAdapter {
         //------------------------------
         //Dependiendo de la dirección, tenemos que actualizar las posiciones del jugador.
         if (!bGanamos) {
-            switch (iDireccion) {
+            /*switch (iDireccion) {
                 case 0: //arriba
                     fPosYPlayer+=fVelPlayer;
                     break;
@@ -115,28 +134,40 @@ public class Main extends ApplicationAdapter {
                 case 3:
                     fPosXPlayer+=fVelPlayer;
                     break;
+            }*/
+            contador++; //Actualizamos el número de frames que llevamos
+            //Toca moverse, quizás, o crecer
+            if (contador % 30 == 0) {
+                //Si hemos pasado 4 veces (240 frames) entonces crecemos y reseteamos
+                if (contador == 240) {
+                    contador = 0;
+                    snaky.crecer();
+                } else
+                    snaky.moverse();
             }
+
             //Evitamos que se salga
-            if (fPosXPlayer>Gdx.graphics.getWidth()-image.getWidth()) fPosXPlayer = Gdx.graphics.getWidth()-image.getWidth();
+            /*if (fPosXPlayer>Gdx.graphics.getWidth()-image.getWidth()) fPosXPlayer = Gdx.graphics.getWidth()-image.getWidth();
             if (fPosYPlayer>Gdx.graphics.getHeight()-image.getWidth()) fPosYPlayer = Gdx.graphics.getHeight()-image.getWidth();
             if (fPosXPlayer<0) fPosXPlayer = 0;
-            if (fPosYPlayer<0) fPosYPlayer = 0;
+            if (fPosYPlayer<0) fPosYPlayer = 0;*/
         }
 
         //También simulamos el "cambio" o "salto" de la imagen a perseguir
-        if (!bGanamos && Math.random()>0.999) {//0,1% de posibilidades de "saltar" en cada frame
+        /*if (!bGanamos && Math.random()>0.999) {//0,1% de posibilidades de "saltar" en cada frame
             Random dado = new Random();
             iPosXImagen = dado.nextInt(Gdx.graphics.getWidth());
             iPosYImagen = dado.nextInt(Gdx.graphics.getHeight());
 
-        }
+        }*/
 
         //------------------------------
         //Control de cambios
         //------------------------------
 
+        //Desactivamos el control de estado del juego inicial
         //Si han colisionado, hemos ganado
-        if (colisionan(iPosXImagen,iPosYImagen,fPosXPlayer,fPosYPlayer, image.getWidth())) {
+        if (!snaky.estaViva()) {
             //ganamos
             bGanamos = true;
 
@@ -159,8 +190,9 @@ public class Main extends ApplicationAdapter {
         if(bGanamos) {
             batch.draw(endImage, 80, 0);
         } else {
-            batch.draw(image, iPosXImagen, iPosYImagen);
-            batch.draw(player, fPosXPlayer, fPosYPlayer);
+            //batch.draw(image, iPosXImagen, iPosYImagen);
+            //batch.draw(player, fPosXPlayer, fPosYPlayer); //Ahora el jugador es invisible
+            snaky.draw(batch);
         }
 
         batch.end();
@@ -169,7 +201,7 @@ public class Main extends ApplicationAdapter {
     @Override
     public void dispose() {
         batch.dispose();
-        image.dispose();
+        //image.dispose();
         player.dispose();
         endImage.dispose();
     }
