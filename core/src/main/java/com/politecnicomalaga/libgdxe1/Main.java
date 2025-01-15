@@ -20,7 +20,7 @@ import java.util.Random;
 public class Main extends ApplicationAdapter {
     private SpriteBatch batch; //Es la clase que representa una pantalla donde se pueden pintar imágenes
     //private Texture image;  //Esta es una instancia/objeto imagen
-    private Texture player;
+    private Texture[] player;
     private Texture endImage;
     //Aquí ponemos todas las Texture que necesitemos ahora mismo en el videojuego
     //Además todas las variables (son realmente atributos de Main) que necesitemos
@@ -52,7 +52,10 @@ public class Main extends ApplicationAdapter {
          */
         batch = new SpriteBatch();
         //image = new Texture("mouse.png");
-        player = new Texture("snake_body.png");
+        player = new Texture[5];
+        for (int i = 0;i<5;i++) {
+            player[i] = new Texture("snake_body" + (i+1) + ".png");
+        }
         endImage = new Texture("end.png");
         //iDireccion =0;
         //iPosXImagen=200;
@@ -202,7 +205,9 @@ public class Main extends ApplicationAdapter {
     public void dispose() {
         batch.dispose();
         //image.dispose();
-        player.dispose();
+        for (int i = 0;i<5;i++) {
+            player[i].dispose();
+        }
         endImage.dispose();
     }
 

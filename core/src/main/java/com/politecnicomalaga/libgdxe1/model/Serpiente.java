@@ -3,6 +3,8 @@ package com.politecnicomalaga.libgdxe1.model;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import java.util.Random;
+
 public class Serpiente {
     //Atributos
 
@@ -10,21 +12,21 @@ public class Serpiente {
     private Cuadrado[] cuerpo; //Tenemos un array donde almacenamos los cuadrados. La cabeza, será uno de los cuadrados en uso
     private int iCabeza, iCola,  iTam; //índice de la cabeza y tamaño de la serpiente
     private Cuadrado.Direccion direccion;
-    private Texture imagen;
+    private Texture[] imagenes;
     private int iLadoCuadrado;
     private int iAnchoPantalla, iAltoPantalla;
 
     //Métodos
-    public Serpiente(Texture imagen, int iAnchoPantalla, int iAltoPantalla, int iLadoCuadrado) {
+    public Serpiente(Texture[] imagenes, int iAnchoPantalla, int iAltoPantalla, int iLadoCuadrado) {
 
         //Calculamos el número máximo de cuadrados que caben en la pantalla
         int maxCuadrados = (iAnchoPantalla/iLadoCuadrado) * (iAltoPantalla/iLadoCuadrado);
         cuerpo = new Cuadrado[maxCuadrados];
 
         //Ya tenemos el array dimensionado. Ahora creamos la serpiente con al menos un cuadrado, la cabeza
-        cuerpo[0] = new Cuadrado(iAnchoPantalla/2,iAltoPantalla/2,imagen,iLadoCuadrado);
-        cuerpo[1] = new Cuadrado(iAnchoPantalla/2,iAltoPantalla/2,imagen,iLadoCuadrado);
-        cuerpo[2] = new Cuadrado(iAnchoPantalla/2,iAltoPantalla/2,imagen,iLadoCuadrado);
+        cuerpo[0] = new Cuadrado(iAnchoPantalla/2,iAltoPantalla/2,imagenes[0],iLadoCuadrado);
+        cuerpo[1] = new Cuadrado(iAnchoPantalla/2,iAltoPantalla/2,imagenes[1],iLadoCuadrado);
+        cuerpo[2] = new Cuadrado(iAnchoPantalla/2,iAltoPantalla/2,imagenes[2],iLadoCuadrado);
         cuerpo[1].moverse(Cuadrado.Direccion.DER); //Ponemos la cola al lado de la cabeza.
         cuerpo[2].moverse(Cuadrado.Direccion.DER);
         cuerpo[2].moverse(Cuadrado.Direccion.DER);
@@ -32,7 +34,7 @@ public class Serpiente {
         iCola = 2;
         iTam = 3;
         direccion = Cuadrado.Direccion.IZQ;
-        this.imagen = imagen;
+        this.imagenes = imagenes;
         this.iLadoCuadrado=iLadoCuadrado;
         this.iAltoPantalla = iAltoPantalla;
         this.iAnchoPantalla = iAnchoPantalla;
@@ -100,7 +102,7 @@ public class Serpiente {
         // Por lo tanto, se trata de insertar una nueva cabeza detrás justo de T moviendo los cuadrados desde esa posición
         // de nueva cabeza (NH) hasta el final +1 posición hacia atrás
 
-        Cuadrado nuevaCabeza = new Cuadrado(0,0,imagen,iLadoCuadrado);
+        Cuadrado nuevaCabeza = new Cuadrado(0,0,imagenes[(new Random().nextInt(5))],iLadoCuadrado);
         nuevaCabeza.moverEncima(cuerpo[iCabeza]); //Colocamos la cabeza nueva encima de la antigua (en la pantalla)
         nuevaCabeza.moverse(direccion); //la movemos a su sitio (en la pantalla)
 
