@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.politecnicomalaga.libgdxe1.model.Cuadrado;
 import com.politecnicomalaga.libgdxe1.model.Serpiente;
+import com.politecnicomalaga.libgdxe1.view.NumbersPanel;
 
 import java.util.Random;
 
@@ -22,27 +23,21 @@ public class Main extends ApplicationAdapter {
     //private Texture image;  //Esta es una instancia/objeto imagen
     private Texture[] player;
     private Texture endImage;
+    private Texture portadaImage;
     //Aquí ponemos todas las Texture que necesitemos ahora mismo en el videojuego
     //Además todas las variables (son realmente atributos de Main) que necesitemos
     private int iPosXClicked;
     private int iPosYClicked;
-
-    //private float iPosXImagen;
-    //private float iPosYImagen;
-
-    //private float fPosXPlayer;
-    //private float fPosYPlayer;
-    //private float fVelPlayer;
-
-    //private int iDireccion;  //0 para arriba, 1 para abajo, 2 para izquierda, 3 para derecha
     private boolean bGanamos;
 
-    //Empezamos la "mutación" hacia la serpiente
+    // serpiente
     private Serpiente snaky;
 
     //Primera aproximación al control del tiempo. Contador entero básico
     private int contador;
 
+    //Panel de puntuación:
+    private NumbersPanel panelPuntos;
 
     @Override
     public void create() {
@@ -51,22 +46,17 @@ public class Main extends ApplicationAdapter {
             ApplicationAdapter es el encargado de llamar a este método. Lo veremos en profundidad cuando estudiemos herencia
          */
         batch = new SpriteBatch();
-        //image = new Texture("mouse.png");
         player = new Texture[5];
         for (int i = 0;i<5;i++) {
             player[i] = new Texture("snake_body" + (i+1) + ".png");
         }
         endImage = new Texture("end.png");
-        //iDireccion =0;
-        //iPosXImagen=200;
-        //iPosYImagen=200;
-
-        //fPosXPlayer=300;
-        //fPosYPlayer=300;
-        //fVelPlayer=0.5f;
-        bGanamos = false;
+        portadaImage = new Texture("portada.png");
+        bGanamos = true;
         snaky = new Serpiente(player,Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),20);
         contador = 0;
+
+        panelPuntos = new NumbersPanel(Gdx.graphics.getWidth()/10,Gdx.graphics.getHeight()/10, 30);
 
     }
 
@@ -110,12 +100,14 @@ public class Main extends ApplicationAdapter {
                     snaky.setDireccion(Cuadrado.Direccion.ARRIBA);
                 }
             }
-            //Desactivamos por ahora la "muerte" de nuestro player
+
+            //Control del fin de partida
             if (bGanamos) {
                 bGanamos = false;
                 //La antigua serpiente, al quedarse sin referencia, desaparece y se recicla
                 snaky = new Serpiente(player,Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),20);
                 contador = 0;
+                panelPuntos.setData(0);
             }
         }
 
@@ -145,6 +137,7 @@ public class Main extends ApplicationAdapter {
                 if (contador == 200) {
                     contador = 0;
                     snaky.crecer();
+                    panelPuntos.increment(1);
                 } else
                     snaky.moverse();
             }
@@ -184,19 +177,24 @@ public class Main extends ApplicationAdapter {
 
         //Dibujar. Es donde hacemos que el "mundo" del videojuego muestre sus datos al jugador
         //clear. Se trata de limpiar la pantalla. Siempre antes de empezar a dibujar cualquier cosa
-        ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
+        ScreenUtils.clear(0f, 0f, 0f, 1f);
 
         //Rutina típica de dibujado. Hay que llamar obligatoriamente a begin y a end
         batch.begin();
 
         //Aquí los draw...
         if(bGanamos) {
-            batch.draw(endImage, 80, 0);
+            if (contador == 0) {
+                batch.draw(portadaImage, 80, 0,500,500);
+            } else {
+                batch.draw(endImage, 80, 0);
+                panelPuntos.render(batch);
+            }
         } else {
-            //batch.draw(image, iPosXImagen, iPosYImagen);
-            //batch.draw(player, fPosXPlayer, fPosYPlayer); //Ahora el jugador es invisible
             snaky.draw(batch);
+            panelPuntos.render(batch);
         }
+
 
         batch.end();
     }
@@ -209,6 +207,8 @@ public class Main extends ApplicationAdapter {
             player[i].dispose();
         }
         endImage.dispose();
+        panelPuntos.dispose();
+        portadaImage.dispose();
     }
 
 
