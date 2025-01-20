@@ -53,6 +53,7 @@ public class Cuadrado {
     }
 
     public void draw(SpriteBatch sp) {
+
         sp.draw(imagen,fPosX,fPosY,iLado,iLado);
     }
 
