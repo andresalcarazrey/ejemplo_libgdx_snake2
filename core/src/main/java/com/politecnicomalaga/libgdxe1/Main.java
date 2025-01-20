@@ -2,15 +2,14 @@ package com.politecnicomalaga.libgdxe1;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.politecnicomalaga.libgdxe1.model.Cuadrado;
 import com.politecnicomalaga.libgdxe1.model.Serpiente;
 import com.politecnicomalaga.libgdxe1.view.NumbersPanel;
-
-import java.util.Random;
 
 /*  AAR
     Esta es la clase de partida de todos los videojuegos Libgdx. Desde esta clase, que es llamada desde el lanzador
@@ -28,7 +27,7 @@ public class Main extends ApplicationAdapter {
     //Además todas las variables (son realmente atributos de Main) que necesitemos
     private int iPosXClicked;
     private int iPosYClicked;
-    private boolean bGanamos;
+    private boolean bPerdimos;
 
     // serpiente
     private Serpiente snaky;
@@ -38,6 +37,12 @@ public class Main extends ApplicationAdapter {
 
     //Panel de puntuación:
     private NumbersPanel panelPuntos;
+
+    private Music music_intro;
+    private Music music_playing;
+    private Music music_die;
+    private Sound crecer;
+
 
     @Override
     public void create() {
@@ -52,11 +57,17 @@ public class Main extends ApplicationAdapter {
         }
         endImage = new Texture("end.png");
         portadaImage = new Texture("portada.png");
-        bGanamos = true;
+        bPerdimos = true;
         snaky = new Serpiente(player,Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),20);
         contador = 0;
 
         panelPuntos = new NumbersPanel(Gdx.graphics.getWidth()/10,Gdx.graphics.getHeight()/10, 30);
+        music_intro =  Gdx.audio.newMusic(Gdx.files.internal("music/intro.wav"));
+        music_playing =  Gdx.audio.newMusic(Gdx.files.internal("music/jugando3.wav"));
+        music_die =  Gdx.audio.newMusic(Gdx.files.internal("music/morir.wav"));
+        crecer = Gdx.audio.newSound(Gdx.files.internal("music/crecer.wav"));
+        music_intro.setLooping(true);
+        music_intro.play();
 
     }
 
@@ -102,8 +113,12 @@ public class Main extends ApplicationAdapter {
             }
 
             //Control del fin de partida
-            if (bGanamos) {
-                bGanamos = false;
+            if (bPerdimos) {
+                bPerdimos = false;
+                music_die.stop();
+                music_intro.stop();
+                if (!music_playing.isLooping()) music_playing.setLooping(true);
+                music_playing.play();
                 //La antigua serpiente, al quedarse sin referencia, desaparece y se recicla
                 snaky = new Serpiente(player,Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),20);
                 contador = 0;
@@ -115,7 +130,7 @@ public class Main extends ApplicationAdapter {
         //Simulación del mundo
         //------------------------------
         //Dependiendo de la dirección, tenemos que actualizar las posiciones del jugador.
-        if (!bGanamos) {
+        if (!bPerdimos) {
             /*switch (iDireccion) {
                 case 0: //arriba
                     fPosYPlayer+=fVelPlayer;
@@ -132,11 +147,12 @@ public class Main extends ApplicationAdapter {
             }*/
             contador++; //Actualizamos el número de frames que llevamos
             //Toca moverse, quizás, o crecer
-            if (contador % 20 == 0) {
+            if (contador % 10 == 0) {
                 //Si hemos pasado 4 veces (240 frames) entonces crecemos y reseteamos
-                if (contador == 200) {
+                if (contador == 100) {
                     contador = 0;
                     snaky.crecer();
+                    crecer.play();
                     panelPuntos.increment(1);
                 } else
                     snaky.moverse();
@@ -165,7 +181,9 @@ public class Main extends ApplicationAdapter {
         //Si han colisionado, hemos ganado
         if (!snaky.estaViva()) {
             //ganamos
-            bGanamos = true;
+            bPerdimos = true;
+            music_playing.stop();
+            music_die.play();
 
         }
 
@@ -183,7 +201,7 @@ public class Main extends ApplicationAdapter {
         batch.begin();
 
         //Aquí los draw...
-        if(bGanamos) {
+        if(bPerdimos) {
             if (contador == 0) {
                 batch.draw(portadaImage, 80, 0,500,500);
             } else {
@@ -209,6 +227,10 @@ public class Main extends ApplicationAdapter {
         endImage.dispose();
         panelPuntos.dispose();
         portadaImage.dispose();
+        crecer.dispose();
+        music_die.dispose();
+        music_intro.dispose();
+        music_playing.dispose();
     }
 
 
